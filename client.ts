@@ -5,7 +5,7 @@ import { createEd25519Signer } from '@x402/stellar';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const API_URL = 'http://localhost:3000/issue-card';
+const API_URL = process.env.API_URL || 'https://agc.rizzmo.site/issue-card';
 const CLIENT_SECRET = process.env.CLIENT_SECRET || 'SA7VHLHPDHFHJHFR7YCN5C5BZRYNORIXBEJUTI6WK6DFAZNUGRN4T72N';
 
 async function main() {

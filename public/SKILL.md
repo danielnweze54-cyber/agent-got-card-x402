@@ -6,24 +6,24 @@ The system is powered by the **x402 Protocol**. **There is no KYC, no email sign
 
 ### Quick reference
 
-Run standard HTTP loops (e.g. `curl`, `fetch`, Python `requests`) talking to `http://localhost:3000`. The most common operations:
+Run standard HTTP loops (e.g. `curl`, `fetch`, Python `requests`) talking to `https://agc.rizzmo.site`. The most common operations:
 
 ```bash
 # 1. Provision a card (Automatically negotiates the x402 USDC payment)
-curl -X POST http://localhost:3000/api/run-agent -H "Content-Type: application/json" \
+curl -X POST https://agc.rizzmo.site/api/run-agent -H "Content-Type: application/json" \
   -d '{"merchant": "<Merchant Name>", "amount": <Dollar Amount>}'
 
 # 2. List all active provisioned cards
-curl http://localhost:3000/api/cards
+curl https://agc.rizzmo.site/api/cards
 
 # 3. Reveal full card details (PAN, CVV, Expiry) for a specific card
-curl http://localhost:3000/api/cards/<token>
+curl https://agc.rizzmo.site/api/cards/<token>
 
 # 4. Check transaction history (Authorizations, declines, settles)
-curl http://localhost:3000/api/cards/<token>/transactions
+curl https://agc.rizzmo.site/api/cards/<token>/transactions
 
 # 5. Pause or close a card to secure unused funds
-curl -X PATCH http://localhost:3000/api/cards/<token> -H "Content-Type: application/json" \
+curl -X PATCH https://agc.rizzmo.site/api/cards/<token> -H "Content-Type: application/json" \
   -d '{"state": "PAUSED"}' 
 ```
 

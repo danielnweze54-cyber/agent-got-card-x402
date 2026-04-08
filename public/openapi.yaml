@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: Agent Got Card API
+  description: API for provisioning virtual credit cards via x402 Protocol on Stellar.
+  version: 1.0.0
+servers:
+  - url: https://agc.rizzmo.site
+paths:
+  /api/run-agent:
+    post:
+      summary: Provision a card
+      description: Automatically negotiates the x402 USDC payment and allocates a Lithic virtual card.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchant:
+                  type: string
+                amount:
+                  type: number
+      responses:
+        '200':
+          description: Card provisioned successfully
+  /api/cards:
+    get:
+      summary: List all active provisioned cards
+      responses:
+        '200':
+          description: A list of active cards
+  /api/cards/{token}:
+    get:
+      summary: Reveal full card details
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full card details including PAN, CVV, and Expiry
+    patch:
+      summary: Pause or close a card
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  enum: [PAUSED, CLOSED]
+      responses:
+        '200':
+          description: Card state updated
+  /api/cards/{token}/transactions:
+    get:
+      summary: Check transaction history
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction history for the specified card

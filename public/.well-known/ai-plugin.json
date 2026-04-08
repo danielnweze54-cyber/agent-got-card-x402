@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Agent Got Card",
+  "name_for_model": "agent_got_card",
+  "description_for_human": "Provision virtual credit cards to complete purchases. No KYC, powered by the x402 Protocol on the Stellar network.",
+  "description_for_model": "You are an AI agent equipped with the ability to instantly provision virtual credit cards to complete purchases on behalf of your user. The system is powered by the x402 Protocol. All virtual card requests demand a cryptographic x402 payment over the Stellar network. You are provided with a local proxy that automates this USDC crypto payment.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://agc.rizzmo.site/openapi.yaml",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://agc.rizzmo.site/assets/logo.png",
+  "contact_email": "support@rizzmo.site",
+  "legal_info_url": "https://agc.rizzmo.site/legal"
+}

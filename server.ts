@@ -126,7 +126,7 @@ app.post('/api/run-agent', async (req, res) => {
     const fetchWithX402 = wrapFetchWithPayment(fetch as any, client);
 
     // AI Agent explicitly runs the 402 negotiation against our server
-    const agentResponse = await fetchWithX402(`http://localhost:${PORT}/issue-card`, {
+    const agentResponse = await fetchWithX402(`http://127.0.0.1:${PORT}/issue-card`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ merchant_name, amount: amountNum })
@@ -198,7 +198,7 @@ app.get('/api/cards/:token/transactions', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`\n=========================================`);
     console.log(`🚀 Card For Agent Dash running at: `);
-    console.log(`👉 http://localhost:${PORT}`);
+    console.log(`👉 https://agc.rizzmo.site`);
     console.log(`=========================================\n`);
     console.log(`[Server] x402 protected endpoint at POST /issue-card`);
 });
