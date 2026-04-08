@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentPay Dashboard</title>
+    <title>Agent Got Card - Your agent can now buy anything.</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -16,7 +16,14 @@
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'marquee': 'marquee 25s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-50%)' },
+                        }
                     }
                 }
             }
@@ -24,270 +31,261 @@
     </script>
     <style>
         .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
         }
-        .credit-card {
-            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-            transform-style: preserve-3d;
+        .glass-panel:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
-        .credit-card:hover {
-            transform: translateY(-5px) rotateX(5deg) rotateY(-5deg);
-            box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.4);
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
         }
-        .hide { display: none !important; }
-        
-        .log-box {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: #a3a3a3;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            height: 180px; /* Increased height to fit HTTP logs */
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .log-entry { opacity: 0; animation: fadeIn 0.3s ease forwards; white-space: pre-wrap; }
-        @keyframes fadeIn { to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-neutral-950 text-neutral-100 font-sans min-h-screen selection:bg-indigo-500/30 overflow-x-hidden overflow-y-auto relative  pb-10">
+<body class="bg-neutral-950 text-neutral-100 font-sans min-h-screen selection:bg-indigo-500/30 overflow-x-hidden pt-8">
 
-    <div class="absolute top-[-10%] left-[10%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-    <div class="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
-
-    <div class="max-w-6xl mx-auto p-4 md:p-8 relative z-10 pt-2 md:pt-12">
-        <header class="mb-8 flex justify-between items-end border-b border-white/10 pb-4">
-            <div>
-                <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">AgentPay <span class="text-neutral-500">Demo</span></h1>
-                <p class="text-neutral-400 mt-1 md:mt-2 text-xs md:text-sm">Autonomous Agent Wallet & x402 Card Issuing</p>
-            </div>
-            <div class="flex items-center space-x-2 text-sm font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20">
-                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                <span>SYSTEM_ONLINE</span>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Left: Action Panel -->
-            <div class="glass-panel rounded-2xl p-8 flex flex-col h-full lg:col-span-5">
-                <h2 class="text-xl font-medium mb-1">Agent Interface</h2>
-                <p class="text-sm text-neutral-400 mb-6">Trigger the AI agent to provision a new virtual card for an impending vendor payment.</p>
-
-                <!-- New Input Fields -->
-                <div class="flex gap-4 mb-6">
-                    <div class="flex-1">
-                        <label class="block text-xs font-medium text-neutral-400 mb-1">Merchant Name</label>
-                        <input type="text" id="merchantInput" value="Notion" oninput="updateDisplay()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-neutral-600 transition-colors">
-                    </div>
-                    <div class="w-1/3">
-                        <label class="block text-xs font-medium text-neutral-400 mb-1">Limit (USD)</label>
-                        <input type="number" id="amountInput" value="5.00" step="1.00" oninput="updateDisplay()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-neutral-600 transition-colors">
-                    </div>
-                </div>
-
-                <div class="bg-black/40 rounded-lg p-4 font-mono text-[0.8rem] text-neutral-300 mb-4 border border-white/5 leading-relaxed">
-                    <span class="text-purple-400">agent</span><span class="text-neutral-500">.</span>execute({<br>
-                    &nbsp;&nbsp;task: <span class="text-green-400">"Provision SaaS Card"</span>,<br>
-                    &nbsp;&nbsp;merchant: <span class="text-green-400">"<span id="displayMerchant">Notion</span>"</span>,<br>
-                    &nbsp;&nbsp;limit: <span class="text-blue-400" id="displayAmount">5.00</span>,<br>
-                    &nbsp;&nbsp;network: <span class="text-green-400">"VISA"</span><br>
-                    });
-                </div>
-
-                <div class="log-box mb-4" id="agentLogs">
-                    <div class="text-neutral-600 italic">// Agent logs will appear here</div>
-                </div>
-
-                <div class="mt-auto">
-                    <button id="triggerBtn" onclick="runAgentFlow()" class="w-full relative group overflow-hidden rounded-xl bg-white text-black font-medium py-3 px-4 transition-all hover:bg-neutral-200">
-                        <span class="relative z-10 flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            Execute Agent Workflow
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right: Result/Output Panel -->
-            <div class="glass-panel rounded-2xl p-8 flex flex-col items-center justify-center relative lg:col-span-7 overflow-hidden min-h-[400px]">
-                
-                <div id="idleState" class="text-center text-neutral-500 flex flex-col items-center">
-                    <svg class="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                    <p class="text-sm">Awaiting agent execution...</p>
-                </div>
-
-                <div id="loadingState" class="hide text-center flex flex-col items-center w-full">
-                    <div class="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6"></div>
-                    <div class="text-sm text-neutral-400 font-mono space-y-2 text-left bg-black/30 p-4 rounded-xl border border-white/5 w-full max-w-md mx-auto">
-                        <div id="step1" class="text-neutral-600 transition-colors">1. Requesting /issue-card</div>
-                        <div id="step2" class="text-neutral-600 transition-colors">2. Received 402 Payment Required</div>
-                        <div id="step3" class="text-neutral-600 transition-colors">3. Signing Stellar TX (x402 protocol)</div>
-                        <div id="step4" class="text-neutral-600 transition-colors">4. Host Verifying & Issuing Lithic Card</div>
-                    </div>
-                </div>
-
-                <div id="successState" class="hide w-full max-w-md mx-auto perspective-1000">
-                    <div class="text-xs font-mono text-emerald-400 mb-6 text-center">✓ PAYMENT_SETTLED &amp; CARD_PROVISIONED</div>
-                    
-                    <div class="credit-card relative w-full aspect-[1.586/1] rounded-2xl overflow-hidden p-6 flex flex-col justify-between bg-[#FBFBF2] border border-neutral-300 shadow-2xl">
-                        <div class="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-10 -mt-20"></div>
-                        
-                        <div class="flex justify-between items-start relative z-10">
-                            <div class="w-12 h-9 bg-gradient-to-br from-yellow-200 to-yellow-500 rounded-md overflow-hidden flex items-center justify-center opacity-90 border border-yellow-600/50">
-                                <div class="w-[80%] h-[80%] border border-yellow-700/30 rounded flex divide-x divide-yellow-700/30">
-                                    <div class="w-1/2 flex flex-col divide-y divide-yellow-700/30"><div class="h-1/2"></div><div class="h-1/2"></div></div>
-                                    <div class="w-1/2 flex flex-col divide-y divide-yellow-700/30"><div class="h-1/2"></div><div class="h-1/2"></div></div>
-                                </div>
-                            </div>
-                            <div class="text-neutral-800 font-bold italic text-xl tracking-wider">VISA</div>
-                        </div>
-
-                        <div class="relative z-10 text-neutral-900">
-                            <div id="cardPan" class="font-mono text-2xl tracking-[0.14em] mb-3 text-black">•••• •••• •••• ••••</div>
-                            <div class="flex justify-between items-end">
-                                <div class="flex flex-col">
-                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">Cardholder</span>
-                                    <span id="cardMemo" class="font-medium tracking-wide text-sm truncate max-w-[140px] text-neutral-900">AGENT-7</span>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">Valid Thru</span>
-                                    <span id="cardExp" class="font-mono text-sm text-neutral-900">--/--</span>
-                                </div>
-                                <div class="flex flex-col items-end">
-                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">CVV</span>
-                                    <span id="cardCvv" class="font-mono text-sm text-neutral-900">•••</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-8 glass-panel rounded-xl p-4 font-mono text-xs text-neutral-400 flex flex-col gap-2">
-                        <div class="flex justify-between">
-                            <span>LITHIC_TOKEN:</span> <span id="cardToken" class="text-white truncate max-w-[180px]">...</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>SETTLED_TX:</span> <span class="text-emerald-400">Verified via OpenZeppelin</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+    <!-- Background Gradients & Grid -->
+    <div class="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
+        <div class="absolute w-full h-[80vh] bg-grid opacity-60"></div>
+        <div class="absolute top-[10%] left-[20%] w-[30vw] h-[30vh] bg-indigo-600/10 rounded-full blur-[140px]"></div>
+        <div class="absolute bottom-[20%] right-[20%] w-[40vw] h-[40vh] bg-purple-600/10 rounded-full blur-[140px]"></div>
     </div>
 
-    <script>
-        const updateDisplay = () => {
-            document.getElementById('displayMerchant').innerText = document.getElementById('merchantInput').value || 'Unknown';
-            document.getElementById('displayAmount').innerText = parseFloat(document.getElementById('amountInput').value || 0).toFixed(2);
-        };
+    <!-- Nav -->
+    <nav class="relative z-10 max-w-6xl mx-auto px-6 py-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img src="/assets/logo.png" alt="Agent Got Card Logo" class="h-8 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <span class="font-semibold tracking-tight text-xl">Agent Got Card</span>
+        </div>
+        <div class="flex items-center gap-6 text-sm font-medium">            <a href="/SKILL.md" target="_blank" class="text-neutral-400 hover:text-white transition-colors hidden sm:block">Skill</a>            <a href="#" class="text-neutral-400 hover:text-white transition-colors hidden sm:block">Developers</a>
+            <a href="#" class="text-neutral-400 hover:text-white transition-colors hidden sm:block">Docs</a>
+            <a href="/demo" class="bg-white text-black px-4 py-2 rounded-full hover:bg-neutral-200 transition-colors">Live Demo</a>
+        </div>
+    </nav>
 
-        const addLog = (msg, isSuccess = false, isError = false) => {
-            const logs = document.getElementById('agentLogs');
-            if(logs.innerText.includes('// Agent logs')) logs.innerHTML = '';
+    <main class="relative z-10 max-w-6xl mx-auto px-6 pt-24 pb-32">
+        <!-- Hero Section -->
+        <section class="text-center max-w-4xl mx-auto mb-32">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8">
+                <span class="flex h-2 w-2 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-mono text-neutral-300">Powered by x402 Protocol & Stellar</span>
+            </div>
             
-            const div = document.createElement('div');
-            div.className = `log-entry ${isSuccess ? 'text-emerald-400' : isError ? 'text-red-400' : 'text-neutral-400'}`;
-            const time = new Date().toISOString().split('T')[1].substring(0, 12);
-            div.innerText = `[${time}] ${msg}`;
-            logs.appendChild(div);
-            logs.scrollTop = logs.scrollHeight;
-        };
-
-        const highlightStep = (stepId) => {
-            const step = document.getElementById(stepId);
-            if(step) step.className = 'text-white font-medium animate-pulse';
-        };
-        const completeStep = (stepId) => {
-            const step = document.getElementById(stepId);
-            if(step) step.className = 'text-emerald-400';
-        };
-
-        async function runAgentFlow() {
-            const btn = document.getElementById('triggerBtn');
-            const idle = document.getElementById('idleState');
-            const loading = document.getElementById('loadingState');
-            const success = document.getElementById('successState');
-
-            // Reset UI
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            idle.classList.add('hide');
-            success.classList.add('hide');
-            loading.classList.remove('hide');
-            document.getElementById('agentLogs').innerHTML = '';
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
+                Your agent can now instantly spend crypto with <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">cards.</span>
+            </h1>
             
-            ['step1','step2','step3','step4'].forEach(id => {
-                document.getElementById(id).className = 'text-neutral-600 transition-colors';
-            });
+            <p class="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                Instantly give your AI agent a virtual card funded entirely by crypto. Don't risk handing over your personal credit card—let agents securely spend USDC via the x402 protocol.
+            </p>
 
-            addLog('Initializing Agent x402 Client...');
-            const merchant = document.getElementById('merchantInput').value || 'Notion';
-            const amount = parseFloat(document.getElementById('amountInput').value || 5.00);
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="/demo" class="w-full sm:w-auto bg-white text-black font-medium px-8 py-4 rounded-xl hover:bg-neutral-200 hover:scale-[1.02] transition-all text-lg flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                    Access Interactive Demo
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </a>
+                <a href="#" class="w-full sm:w-auto bg-neutral-900 border border-white/10 text-white font-medium px-8 py-4 rounded-xl hover:bg-neutral-800 transition-all text-lg flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.085.636-1.334-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.03-2.682-.103-.253-.447-1.27.098-2.646 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.376.202 2.394.1 2.646.64.699 1.026 1.591 1.026 2.682 0 3.842-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"></path></svg>
+                    View Documentation
+                </a>
+            </div>
+        </section>
 
-            try {
-                highlightStep('step1');
-                addLog(`▶ [HTTP] POST /issue-card\n{\n  "merchant_name": "${merchant}",\n  "amount": ${amount}\n}`);
-                
-                setTimeout(() => { completeStep('step1'); highlightStep('step2'); }, 800);
-                setTimeout(() => { 
-                    addLog(`◀ [HTTP] 402 Payment Required\nWWW-Authenticate: x402\n  scheme="exact"\n  price={"asset":"USDC","amount":"${Math.round(amount * 1.01 * 10000000)}"}`);
-                }, 900);
-                
-                setTimeout(() => { completeStep('step2'); highlightStep('step3'); }, 1600);
-                setTimeout(() => { 
-                    addLog(`★ Intercepted by Agent Wallet.\nSigning Payload with local Ed25519 signer...`); 
-                }, 1800);
-                
-                setTimeout(() => { completeStep('step3'); highlightStep('step4'); }, 3000);
-                setTimeout(() => { 
-                    addLog(`▶ [HTTP] POST /issue-card\nAuthorization: x402 stellar:testnet <signature_hash>\n{\n  "merchant_name": "${merchant}",\n  "amount": ${amount}\n}`);
-                }, 3200);
+        <!-- Use Case Marquee -->
+        <section class="mb-32">
+            <h2 class="text-2xl md:text-3xl font-semibold text-center mb-16">What will your agent buy first?</h2>
+            
+            <div class="relative overflow-hidden w-full flex items-center h-48 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+                <!-- Inner flexible container that scrolls -->
+                <div class="flex gap-6 animate-marquee whitespace-nowrap min-w-max">
+                    
+                    <!-- Tile 1 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-xl">O</div>
+                            <span class="font-semibold text-lg">OpenAI</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Burned through your API credits. Loaded another $50. Again.</p>
+                    </div>
 
-                // Actually hit the backend to execute the CLI script or pure function
-                const response = await fetch('/api/run-agent', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ merchant, amount })
-                });
-                const result = await response.json();
+                    <!-- Tile 2 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-black border border-neutral-700 flex items-center justify-center text-white font-bold text-xl">V</div>
+                            <span class="font-semibold text-lg">Vercel</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Pro plan renewed moments before it lapsed. We're online.</p>
+                    </div>
 
-                if (!response.ok) throw new Error(result.error || 'Agent failed');
+                    <!-- Tile 3 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#E3000F] font-bold text-lg">◎</div>
+                            <span class="font-semibold text-lg">Target</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Last Dyson in stock. Grabbed it for you. You're welcome.</p>
+                    </div>
 
-                completeStep('step4');
-                addLog(`◀ [HTTP] 200 OK\n{\n  "message": "Payment settled on-chain",\n  "lithic_token": "${result.card.token}"\n}`, true);
+                    <!-- Tile 4 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-lg">U</div>
+                            <span class="font-semibold text-lg">Uber</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">6am airport ride locked in. Already tipped 20% for you.</p>
+                    </div>
+                    
+                    <!-- Duplicates for seamless scroll -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-xl">O</div>
+                            <span class="font-semibold text-lg">OpenAI</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Burned through your API credits. Loaded another $50. Again.</p>
+                    </div>
+                    <!-- Tile 2 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-black border border-neutral-700 flex items-center justify-center text-white font-bold text-xl">V</div>
+                            <span class="font-semibold text-lg">Vercel</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Pro plan renewed moments before it lapsed. We're online.</p>
+                    </div>
 
-                // Populate Card UI
-                const pan = result.card.pan || '4111222233334444';
-                document.getElementById('cardPan').innerText = [pan.slice(pan.length-16, pan.length-12), pan.slice(pan.length-12, pan.length-8), pan.slice(pan.length-8, pan.length-4), pan.slice(pan.length-4)].join(' ');
-                document.getElementById('cardExp').innerText = `${String(result.card.exp_month).padStart(2,'0')}/${String(result.card.exp_year).slice(-2)}`;
-                document.getElementById('cardCvv').innerText = result.card.cvv || '123';
-                document.getElementById('cardMemo').innerText = result.card.memo || `AgentCard: ${merchant}`;
-                document.getElementById('cardToken').innerText = result.card.token || 'crd_XXX';
+                    <!-- Tile 3 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#E3000F] font-bold text-lg">◎</div>
+                            <span class="font-semibold text-lg">Target</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">Last Dyson in stock. Grabbed it for you. You're welcome.</p>
+                    </div>
 
-                setTimeout(() => {
-                    loading.classList.add('hide');
-                    success.classList.remove('hide');
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btn.querySelector('span').innerText = 'Execute Another Payment';
-                }, 800);
+                    <!-- Tile 4 -->
+                    <div class="glass-panel p-6 rounded-2xl w-80 shrink-0 flex flex-col justify-between h-40">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold text-lg">U</div>
+                            <span class="font-semibold text-lg">Uber</span>
+                        </div>
+                        <p class="text-neutral-400 text-sm whitespace-normal">6am airport ride locked in. Already tipped 20% for you.</p>
+                    </div>
 
-            } catch(e) {
-                addLog(`Error: ${e.message}`, false, true);
-                loading.classList.add('hide');
-                idle.classList.remove('hide');
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                btn.querySelector('span').innerText = 'Retry Workflow';
-            }
-        }
-    </script>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32">
+            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group">
+                <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6 text-blue-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Crypto-Native Spending</h3>
+                <p class="text-neutral-400 text-sm leading-relaxed">Don't hand out blank-check fiat credit cards. Agents pay invoices in USDC on a granular, per-transaction basis.</p>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group">
+                <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-6 text-indigo-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Merchant Lock</h3>
+                <p class="text-neutral-400 text-sm leading-relaxed">Strict constraints. Lock generated cards to specific, exact vendors so your agent can never misspend or go rogue.</p>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group">
+                <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6 text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Single-Use Prepaids</h3>
+                <p class="text-neutral-400 text-sm leading-relaxed">Burner cards generated on the fly. Zero risk of overcharging or recurring subscription traps. Use once and destroy.</p>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden group">
+                <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6 text-purple-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">No KYC < $100</h3>
+                <p class="text-neutral-400 text-sm leading-relaxed">Fund your agents instantly. Provision up to $100 of spending power without tedious identity verification hoops.</p>
+            </div>
+        </section>
+
+        <!-- Supported Agents Grid -->
+        <section class="max-w-5xl mx-auto text-center mb-32 px-6">
+            <h2 class="text-8xl md:text-3xl font-semibold mb-12 text-neutral-200 tracking-tight">Works with any agent.</h2>
+            <div class="flex flex-wrap justify-center items-center gap-6 md:gap-8 transition-all duration-300">
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/OpenAI-logo.svg" alt="OpenAI" class="h-10 md:h-14 object-contain">
+                </div>
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/Cursor-logo.svg" alt="Cursor" class="h-10 md:h-14 object-contain">
+                </div>
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/Claude-logo.svg" alt="Claude" class="h-10 md:h-14 object-contain">
+                </div>
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/GitHub-copilot-logo.svg" alt="Copilot" class="h-10 md:h-14 object-contain">
+                </div>
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/OpenClaw-logo.svg" alt="OpenClaw" class="h-10 md:h-14 object-contain">
+                </div>
+                <div class="bg-neutral-100 hover:bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl transition-colors cursor-default shadow-lg shadow-black/50 border border-white/5">
+                    <img src="/assets/Devin-logo.svg" alt="Devin" class="h-10 md:h-14 object-contain">
+                </div>
+            </div>
+        </section>
+
+        <!-- API Block -->
+        <section class="max-w-4xl mx-auto glass-panel p-8 md:p-12 rounded-3xl mb-16 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 pointer-events-none"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">Built for AI Agents.</h2>
+                    <p class="text-neutral-400 mb-6">Integrate virtual card provisioning directly into your agent's action loop with standard HTTP calls and the open x402 protocol.</p>
+                    <a href="/demo" class="text-white font-medium hover:text-indigo-400 inline-flex items-center gap-1 transition-colors">
+                        View API Documentation <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                </div>
+                <div class="bg-black/60 rounded-xl p-4 font-mono text-xs md:text-sm border border-white/10 shadow-2xl">
+                    <div class="flex gap-2 mb-3 border-b border-white/10 pb-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <span class="text-purple-400">const</span> <span class="text-orange-300">card</span> <span class="text-neutral-400">=</span> <span class="text-purple-400">await</span> agent.<span class="text-blue-400">execute</span>({<br>
+                    &nbsp;&nbsp;task: <span class="text-green-400">"Provision Sandbox Card"</span>,<br>
+                    &nbsp;&nbsp;merchant: <span class="text-green-400">"OpenAI"</span>,<br>
+                    &nbsp;&nbsp;limit: <span class="text-blue-300">50.00</span><br>
+                    });<br>
+                    <br>
+                    <span class="text-neutral-500">// Returns virtual card details dynamically</span><br>
+                    <span class="text-blue-400">console</span>.<span class="text-blue-300">log</span>(card.<span class="text-neutral-200">pan</span>); <span class="text-neutral-500">// 4111 ....</span>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-white/10 py-12 relative z-10 text-center text-sm text-neutral-500">
+        <p class="mb-4">© 2026 Agent Got Card. Built for the modern AI economy.</p>
+        <div class="flex justify-center gap-6">
+            <a href="#" class="hover:text-white transition-colors">Twitter</a>
+            <a href="#" class="hover:text-white transition-colors">GitHub</a>
+            <a href="#" class="hover:text-white transition-colors">Documentation</a>
+        </div>
+    </footer>
+
 </body>
 </html>

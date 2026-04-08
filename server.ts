@@ -18,6 +18,7 @@ const app = express();
 app.use(express.json());
 // Serve the modern UI dashboard
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/demo', (req, res) => res.sendFile(path.join(__dirname, 'public', 'demo.html')));
 
 const PORT = process.env.PORT || 3000;
 const SERVER_PUBLIC_KEY = process.env.SERVER_PUBLIC_KEY || '';
@@ -139,9 +140,64 @@ app.post('/api/run-agent', async (req, res) => {
   }
 });
 
+// ==========================================
+// ADDITIONAL LITHIC MANAGEMENT ENDPOINTS
+// ==========================================
+
+// List all cards
+app.get('/api/cards', async (req, res) => {
+  try {
+    const cards = await lithic.cards.list();
+    return res.status(200).json(cards.data);
+  } catch (err: any) {
+    console.error('Error listing cards:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Get a specific card by token
+app.get('/api/cards/:token', async (req, res) => {
+  try {
+    const card = await lithic.cards.retrieve(req.params.token);
+    return res.status(200).json(card);
+  } catch (err: any) {
+    console.error('Error retrieving card:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a card (e.g. pause, close, or update spend limit)
+app.patch('/api/cards/:token', async (req, res) => {
+  try {
+    const { state, spend_limit } = req.body;
+    const updatePayload: any = {};
+    if (state) updatePayload.state = state;
+    if (spend_limit) updatePayload.spend_limit = Math.round(parseFloat(spend_limit) * 100);
+
+    const card = await lithic.cards.update(req.params.token, updatePayload);
+    return res.status(200).json(card);
+  } catch (err: any) {
+    console.error('Error updating card:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// List card transactions/authorizations
+app.get('/api/cards/:token/transactions', async (req, res) => {
+  try {
+    const transactions = await lithic.transactions.list({
+      card_token: req.params.token
+    });
+    return res.status(200).json(transactions.data);
+  } catch (err: any) {
+    console.error('Error listing transactions:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
     console.log(`\n=========================================`);
-    console.log(`🚀 AgentPay Dash running at: `);
+    console.log(`🚀 Card For Agent Dash running at: `);
     console.log(`👉 http://localhost:${PORT}`);
     console.log(`=========================================\n`);
     console.log(`[Server] x402 protected endpoint at POST /issue-card`);

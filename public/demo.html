@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Got Card Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .credit-card {
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-style: preserve-3d;
+        }
+        .credit-card:hover {
+            transform: translateY(-5px) rotateX(5deg) rotateY(-5deg);
+            box-shadow: 0 25px 50px -12px rgba(139, 92, 246, 0.4);
+        }
+        .hide { display: none !important; }
+        
+        .log-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            height: 180px; /* Increased height to fit HTTP logs */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .log-entry { opacity: 0; animation: fadeIn 0.3s ease forwards; white-space: pre-wrap; }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 font-sans min-h-screen selection:bg-indigo-500/30 overflow-x-hidden overflow-y-auto relative  pb-10">
+
+    <div class="absolute top-[-10%] left-[10%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8 relative z-10 pt-2 md:pt-12">
+        <header class="mb-8 flex justify-between items-end border-b border-white/10 pb-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-semibold tracking-tight">Agent Got Card <span class="text-neutral-500">Demo</span></h1>
+                <p class="text-neutral-400 mt-1 md:mt-2 text-xs md:text-sm">Autonomous Agents Got Cards Powered By x402</p>
+            </div>
+            <div class="flex items-center space-x-2 text-sm font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1.5 rounded-full border border-emerald-400/20">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span>SYSTEM_ONLINE</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Action Panel -->
+            <div class="glass-panel rounded-2xl p-8 flex flex-col h-full lg:col-span-5">
+                <h2 class="text-xl font-medium mb-1">Agent Interface</h2>
+                <p class="text-sm text-neutral-400 mb-6">Trigger the AI agent to provision a new virtual card for an impending vendor payment.</p>
+
+                <!-- New Input Fields -->
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">Merchant Name</label>
+                        <input type="text" id="merchantInput" value="Notion" oninput="updateDisplay()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-neutral-600 transition-colors">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-xs font-medium text-neutral-400 mb-1">Limit (USD)</label>
+                        <input type="number" id="amountInput" value="5.00" step="1.00" oninput="updateDisplay()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-neutral-600 transition-colors">
+                    </div>
+                </div>
+
+                <div class="bg-black/40 rounded-lg p-4 font-mono text-[0.8rem] text-neutral-300 mb-4 border border-white/5 leading-relaxed">
+                    <span class="text-purple-400">agent</span><span class="text-neutral-500">.</span>execute({<br>
+                    &nbsp;&nbsp;task: <span class="text-green-400">"Provision SaaS Card"</span>,<br>
+                    &nbsp;&nbsp;merchant: <span class="text-green-400">"<span id="displayMerchant">Notion</span>"</span>,<br>
+                    &nbsp;&nbsp;limit: <span class="text-blue-400" id="displayAmount">5.00</span>,<br>
+                    &nbsp;&nbsp;network: <span class="text-green-400">"VISA"</span><br>
+                    });
+                </div>
+
+                <div class="log-box mb-4" id="agentLogs">
+                    <div class="text-neutral-600 italic">// Agent logs will appear here</div>
+                </div>
+
+                <div class="mt-auto">
+                    <button id="triggerBtn" onclick="runAgentFlow()" class="w-full relative group overflow-hidden rounded-xl bg-white text-black font-medium py-3 px-4 transition-all hover:bg-neutral-200">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Execute Agent Workflow
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Result/Output Panel -->
+            <div class="glass-panel rounded-2xl p-8 flex flex-col items-center justify-center relative lg:col-span-7 overflow-hidden min-h-[400px]">
+                
+                <div id="idleState" class="text-center text-neutral-500 flex flex-col items-center">
+                    <svg class="w-12 h-12 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    <p class="text-sm">Awaiting agent execution...</p>
+                </div>
+
+                <div id="loadingState" class="hide text-center flex flex-col items-center w-full">
+                    <div class="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-6"></div>
+                    <div class="text-sm text-neutral-400 font-mono space-y-2 text-left bg-black/30 p-4 rounded-xl border border-white/5 w-full max-w-md mx-auto">
+                        <div id="step1" class="text-neutral-600 transition-colors">1. Requesting /issue-card</div>
+                        <div id="step2" class="text-neutral-600 transition-colors">2. Received 402 Payment Required</div>
+                        <div id="step3" class="text-neutral-600 transition-colors">3. Signing Stellar TX (x402 protocol)</div>
+                        <div id="step4" class="text-neutral-600 transition-colors">4. Host Verifying & Issuing Lithic Card</div>
+                    </div>
+                </div>
+
+                <div id="successState" class="hide w-full max-w-md mx-auto perspective-1000">
+                    <div class="text-xs font-mono text-emerald-400 mb-6 text-center">✓ PAYMENT_SETTLED &amp; CARD_PROVISIONED</div>
+                    
+                    <div class="credit-card relative w-full aspect-[1.586/1] rounded-2xl overflow-hidden p-6 flex flex-col justify-between bg-[#FBFBF2] border border-neutral-300 shadow-2xl">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-black/5 rounded-full blur-3xl -mr-10 -mt-20"></div>
+                        
+                        <div class="flex justify-between items-start relative z-10">
+                            <div class="w-12 h-9 bg-gradient-to-br from-yellow-200 to-yellow-500 rounded-md overflow-hidden flex items-center justify-center opacity-90 border border-yellow-600/50">
+                                <div class="w-[80%] h-[80%] border border-yellow-700/30 rounded flex divide-x divide-yellow-700/30">
+                                    <div class="w-1/2 flex flex-col divide-y divide-yellow-700/30"><div class="h-1/2"></div><div class="h-1/2"></div></div>
+                                    <div class="w-1/2 flex flex-col divide-y divide-yellow-700/30"><div class="h-1/2"></div><div class="h-1/2"></div></div>
+                                </div>
+                            </div>
+                            <div class="text-neutral-800 font-bold italic text-xl tracking-wider">VISA</div>
+                        </div>
+
+                        <div class="relative z-10 text-neutral-900">
+                            <div id="cardPan" class="font-mono text-2xl tracking-[0.14em] mb-3 text-black">•••• •••• •••• ••••</div>
+                            <div class="flex justify-between items-end">
+                                <div class="flex flex-col">
+                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">Cardholder</span>
+                                    <span id="cardMemo" class="font-medium tracking-wide text-sm truncate max-w-[140px] text-neutral-900">AGENT-7</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">Valid Thru</span>
+                                    <span id="cardExp" class="font-mono text-sm text-neutral-900">--/--</span>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-[0.65rem] uppercase tracking-widest text-neutral-500 mb-0.5">CVV</span>
+                                    <span id="cardCvv" class="font-mono text-sm text-neutral-900">•••</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 glass-panel rounded-xl p-4 font-mono text-xs text-neutral-400 flex flex-col gap-2">
+                        <div class="flex justify-between">
+                            <span>LITHIC_TOKEN:</span> <span id="cardToken" class="text-white truncate max-w-[180px]">...</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>SETTLED_TX:</span> <span class="text-emerald-400">Verified via OpenZeppelin</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const updateDisplay = () => {
+            document.getElementById('displayMerchant').innerText = document.getElementById('merchantInput').value || 'Unknown';
+            document.getElementById('displayAmount').innerText = parseFloat(document.getElementById('amountInput').value || 0).toFixed(2);
+        };
+
+        const addLog = (msg, isSuccess = false, isError = false) => {
+            const logs = document.getElementById('agentLogs');
+            if(logs.innerText.includes('// Agent logs')) logs.innerHTML = '';
+            
+            const div = document.createElement('div');
+            div.className = `log-entry ${isSuccess ? 'text-emerald-400' : isError ? 'text-red-400' : 'text-neutral-400'}`;
+            const time = new Date().toISOString().split('T')[1].substring(0, 12);
+            div.innerText = `[${time}] ${msg}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        };
+
+        const highlightStep = (stepId) => {
+            const step = document.getElementById(stepId);
+            if(step) step.className = 'text-white font-medium animate-pulse';
+        };
+        const completeStep = (stepId) => {
+            const step = document.getElementById(stepId);
+            if(step) step.className = 'text-emerald-400';
+        };
+
+        async function runAgentFlow() {
+            const btn = document.getElementById('triggerBtn');
+            const idle = document.getElementById('idleState');
+            const loading = document.getElementById('loadingState');
+            const success = document.getElementById('successState');
+
+            // Reset UI
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            idle.classList.add('hide');
+            success.classList.add('hide');
+            loading.classList.remove('hide');
+            document.getElementById('agentLogs').innerHTML = '';
+            
+            ['step1','step2','step3','step4'].forEach(id => {
+                document.getElementById(id).className = 'text-neutral-600 transition-colors';
+            });
+
+            addLog('Initializing Agent x402 Client...');
+            const merchant = document.getElementById('merchantInput').value || 'Notion';
+            const amount = parseFloat(document.getElementById('amountInput').value || 5.00);
+
+            try {
+                highlightStep('step1');
+                addLog(`▶ [HTTP] POST /issue-card\n{\n  "merchant_name": "${merchant}",\n  "amount": ${amount}\n}`);
+                
+                setTimeout(() => { completeStep('step1'); highlightStep('step2'); }, 800);
+                setTimeout(() => { 
+                    addLog(`◀ [HTTP] 402 Payment Required\nWWW-Authenticate: x402\n  scheme="exact"\n  price={"asset":"USDC","amount":"${Math.round(amount * 1.01 * 10000000)}"}`);
+                }, 900);
+                
+                setTimeout(() => { completeStep('step2'); highlightStep('step3'); }, 1600);
+                setTimeout(() => { 
+                    addLog(`★ Intercepted by Agent Wallet.\nSigning Payload with local Ed25519 signer...`); 
+                }, 1800);
+                
+                setTimeout(() => { completeStep('step3'); highlightStep('step4'); }, 3000);
+                setTimeout(() => { 
+                    addLog(`▶ [HTTP] POST /issue-card\nAuthorization: x402 stellar:testnet <signature_hash>\n{\n  "merchant_name": "${merchant}",\n  "amount": ${amount}\n}`);
+                }, 3200);
+
+                // Actually hit the backend to execute the CLI script or pure function
+                const response = await fetch('/api/run-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ merchant, amount })
+                });
+                const result = await response.json();
+
+                if (!response.ok) throw new Error(result.error || 'Agent failed');
+
+                completeStep('step4');
+                addLog(`◀ [HTTP] 200 OK\n{\n  "message": "Payment settled on-chain",\n  "lithic_token": "${result.card.token}"\n}`, true);
+
+                // Populate Card UI
+                const pan = result.card.pan || '4111222233334444';
+                document.getElementById('cardPan').innerText = [pan.slice(pan.length-16, pan.length-12), pan.slice(pan.length-12, pan.length-8), pan.slice(pan.length-8, pan.length-4), pan.slice(pan.length-4)].join(' ');
+                document.getElementById('cardExp').innerText = `${String(result.card.exp_month).padStart(2,'0')}/${String(result.card.exp_year).slice(-2)}`;
+                document.getElementById('cardCvv').innerText = result.card.cvv || '123';
+                document.getElementById('cardMemo').innerText = result.card.memo || `AgentCard: ${merchant}`;
+                document.getElementById('cardToken').innerText = result.card.token || 'crd_XXX';
+
+                setTimeout(() => {
+                    loading.classList.add('hide');
+                    success.classList.remove('hide');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btn.querySelector('span').innerText = 'Execute Another Payment';
+                }, 800);
+
+            } catch(e) {
+                addLog(`Error: ${e.message}`, false, true);
+                loading.classList.add('hide');
+                idle.classList.remove('hide');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.querySelector('span').innerText = 'Retry Workflow';
+            }
+        }
+    </script>
+</body>
+</html>
