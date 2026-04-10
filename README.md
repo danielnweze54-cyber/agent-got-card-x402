@@ -1,8 +1,8 @@
-# 💳 Agent Got Card
+# 💳 PayPer Card
 
 Ever wanted your AI agent to just *buy* something for you with crypto? The problem is that giving an autonomous script your real credit card is terrifying, and traditional fiat gateways (like Stripe) require human-in-the-loop KYC or email signups that break agent workflows. 
 
-Enter **Agent Got Card**.
+Enter **PayPer Card**.
 
 This project allows autonomous AI agents (like GitHub Copilot, Claude, Devin, or custom scripts) to instantly provision **single-use virtual credit cards** to complete purchases. There is no KYC, no fiat checkout, and no email signup. 
 
@@ -23,7 +23,7 @@ sequenceDiagram
     autonumber
     actor U as User / AI Agent
     participant P as Client Proxy (x402)
-    participant S as Server (Agent Got Card)
+    participant S as Server (PayPer Card)
     participant F as x402 Facilitator (Stellar)
     participant L as Lithic API
 

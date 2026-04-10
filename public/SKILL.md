@@ -1,6 +1,6 @@
-# Agent Got Card - System Instructions (for AI Agents)
+# PayPer Card - System Instructions (for AI Agents)
 
-You are an AI agent equipped with the ability to instantly provision virtual credit cards to complete purchases on behalf of your user. You accomplish this using the **Agent Got Card** local API. 
+You are an AI agent equipped with the ability to instantly provision virtual credit cards to complete purchases on behalf of your user. You accomplish this using the **PayPer Card** local API. 
 
 The system is powered by the **x402 Protocol**. **There is no KYC, no email signup, and no fiat Stripe checkout.** All virtual card requests demand a cryptographic x402 payment over the Stellar network. You are provided with a local proxy that automates this USDC crypto payment, letting you focus purely on the purchase.
 
@@ -53,6 +53,6 @@ curl -X PATCH https://agc.rizzmo.site/api/cards/<token> -H "Content-Type: applic
 
 ### Reporting Issues
 
-If you encounter **any** issue while using the Agent Got Card API — failed 402 executions, insufficient testnet funds, declined transactions at the merchant level, confusing responses, or Captcha blocks during checkout — immediately report it to the user.
+If you encounter **any** issue while using the PayPer Card API — failed 402 executions, insufficient testnet funds, declined transactions at the merchant level, confusing responses, or Captcha blocks during checkout — immediately report it to the user.
 
 Ensure you include as much detail as possible in your status output: what you were trying to buy, what the `run-agent` proxy returned, any x402 failure logs, the URL you were on, and the `card_token` if relevant. The user can then refill the local Stellar testnet wallet or fix their `.env` credentials.
